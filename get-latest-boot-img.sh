@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Get device from argument, or default to `alioth` if none given
+if [ $# -eq 0 ]; then
+    DEVICE=alioth
+else
+    DEVICE=$1
+fi
+echo "Getting latest boot.img of device $DEVICE"
+
 # Create temporary directory and automatically remove it when we are done.
 # Credits to Ortwin Angermeier, https://stackoverflow.com/a/34676160
 WORK_DIR=$(mktemp -d)
@@ -23,7 +31,7 @@ pip3 install -r requirements.txt
 
 # Download image
 cd "$WORK_DIR"
-buildhtml=$(wget -O - https://download.lineageos.org/alioth)
+buildhtml=$(wget -O - "https://download.lineageos.org/$DEVICE")
 latestbuildwithhref=$(echo $buildhtml | xmllint --html --xpath "/html/body/main/div/div/div/div/div/table/tbody/tr[1]/td[3]/a/@href" - 2>/dev/null | xargs)
 latestbuild=${latestbuildwithhref#href=}
 latestbuildsha="${latestbuild}?sha256"
