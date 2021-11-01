@@ -1,2 +1,2 @@
 docker build . -t getlos
-docker run -v /storage/emulated/0/Download:/root/Downloads getlos
+docker run -v "$HOME"/Download:/root/Downloads getlos
