@@ -39,7 +39,7 @@ trap cleanup EXIT
 
 # Download image
 cd "$WORK_DIR"
-buildhtml=$(wget -O - "https://download.lineageos.org/$DEVICE")
+buildhtml=$(curl "https://download.lineageos.org/$DEVICE")
 latestbuildwithhref=$(echo $buildhtml | xmllint --html --xpath "/html/body/main/div/div/div/div/div/table/tbody/tr[1]/td[3]/a/@href" - 2>/dev/null | xargs)
 latestbuild=${latestbuildwithhref#href=}
 latestbuildsha="${latestbuild}?sha256"
