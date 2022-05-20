@@ -42,10 +42,10 @@ cd "$WORK_DIR"
 buildhtml=$(curl "https://download.lineageos.org/$DEVICE")
 latestbuildwithhref=$(echo $buildhtml | xmllint --html --xpath "/html/body/main/div/div/div/div/div/table/tbody/tr[1]/td[3]/a/@href" - 2>/dev/null | xargs)
 latestbuild=${latestbuildwithhref#href=}
-latestbuildsha="${latestbuild}?sha256"
+latestbootimg="$(dirname $latestbuild)/boot.img"
 latestbuildname="${latestbuild##*/}"
-curl -Lo "boot.img" "${latestbuild}/../boot.img"
-curl -Lo "boot.img.sha256" "${latestbuild}/../boot.img?sha256"
+curl -Lo "boot.img" "$latestbootimg"
+curl -Lo "boot.img.sha256" "${latestbootimg}?sha256"
 sha256sum -c "boot.img.sha256"
 
 # Copy to Downloads
