@@ -44,8 +44,8 @@ latestbuildwithhref=$(echo $buildhtml | xmllint --html --xpath "/html/body/main/
 latestbuild=${latestbuildwithhref#href=}
 latestbuildsha="${latestbuild}?sha256"
 latestbuildname="${latestbuild##*/}"
-wget -O "boot.img" "${latestbuild}/../boot.img"
-wget -O "boot.img.sha256" "${latestbuild}/../boot.img?sha256"
+curl -Lo "boot.img" "${latestbuild}/../boot.img"
+curl -Lo "boot.img.sha256" "${latestbuild}/../boot.img?sha256"
 sha256sum -c "boot.img.sha256"
 
 # Copy to Downloads
