@@ -37,14 +37,6 @@ function cleanup {
 }
 trap cleanup EXIT
 
-# Install payload dumper
-cd "$WORK_DIR"
-git clone https://github.com/vm03/payload_dumper.git --depth 1
-cd payload_dumper
-python3 -m venv .venv
-source .venv/bin/activate
-pip3 install -r requirements.txt
-
 # Download image
 cd "$WORK_DIR"
 buildhtml=$(wget -O - "https://download.lineageos.org/$DEVICE")
@@ -52,14 +44,10 @@ latestbuildwithhref=$(echo $buildhtml | xmllint --html --xpath "/html/body/main/
 latestbuild=${latestbuildwithhref#href=}
 latestbuildsha="${latestbuild}?sha256"
 latestbuildname="${latestbuild##*/}"
-wget -O "$latestbuildname" "$latestbuild"
-wget -O "${latestbuildname}.zip.sha256" "$latestbuildsha"
-sha256sum -c *.sha256
-
-# Get boot.img
-unzip "$latestbuildname" -d unzipped
-python3 payload_dumper/payload_dumper.py unzipped/payload.bin --out out --images boot
+wget -O "boot.img" "${latestbuild}/../boot.img"
+wget -O "boot.img.sha256" "${latestbuild}/../boot.img?sha256"
+sha256sum -c "boot.img.sha256"
 
 # Copy to Downloads
 mkdir -p "${opt}"
-cp out/boot.img "${opt}/${latestbuildname}.boot.img"
+cp boot.img "${opt}/${latestbuildname}.boot.img"
