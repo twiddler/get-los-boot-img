@@ -1,21 +1,5 @@
 #!/bin/bash
 
-# Collect home directories
-unset options i
-while IFS= read -r -d $'\0' f; do
-    options[i++]="$f/Downloads"
-done < <(find "/home" -maxdepth 1 -mindepth 1 -type d -print0)
-options[i++]="/root/Downloads"
-
-# Let user select home directory
-echo "Select a home directory to store the boot.img."
-select opt in "${options[@]}" "Abort"; do
-    case $opt in
-    *Downloads) break ;;
-    "Abort") exit ;;
-    esac
-done
-
 # Get device from argument, or default to `alioth` if none given
 if [ $# -eq 0 ]; then
     DEVICE=alioth
@@ -49,5 +33,5 @@ curl -Lo "boot.img.sha256" "${latestbootimg}?sha256"
 sha256sum -c "boot.img.sha256"
 
 # Copy to Downloads
-mkdir -p "${opt}"
-cp boot.img "${opt}/${latestbuildname}.boot.img"
+mkdir -p "$HOME/Downloads"
+cp boot.img "$HOME/Downloads/${latestbuildname}.boot.img"
