@@ -12,4 +12,4 @@ I only tested this script with `alioth`, so this might not work for your device.
 
 # Supported distributions
 
-I only tested this script on Fedora 36. If it does not run on your distribution of choice, feel free to open a pull request to fix that.
+I only tested this script on Fedora 37. If it does not run on your distribution of choice, feel free to open a pull request to fix that.
