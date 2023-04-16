@@ -6,66 +6,48 @@ if [ $# -eq 0 ]; then
 else
     device=$1
 fi
-echo "Getting latest boot.img for device $device"
+echo "We will try to download the latest boot.img for device ${device}. If you want to download the boot.img for a different device, you can pass it as an argument to this script: ./get-latest-boot-img.sh <device>"
 
-# Create temporary directory and automatically remove it when we are done. Credits to Ortwin Angermeier, https://stackoverflow.com/a/34676160
+# Create and switch to a new temporary directory. Remove it when we are done. Credits to Ortwin Angermeier, https://stackoverflow.com/a/34676160
 WORK_DIR=$(mktemp -d)
 if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
+    echo ""
     echo "Could not create temp dir. Exiting."
     exit 1
 fi
 function cleanup {
     rm -rf "$WORK_DIR"
+    echo ""
     echo "Deleted temp working directory $WORK_DIR."
 }
 trap cleanup EXIT
-
-# set the base download URL
-url_base="https://mirrorbits.lineageos.org/full/${device}"
-
-# initialize the build number to today's date
-build_num=$(date +%Y%m%d)
-
-# loop through the last two weeks until a valid build is found
-for i in {0..13}; do
-    # construct the URL for the latest build of the given date
-    url="${url_base}/${build_num}/boot.img"
-
-    # check if the file exists
-    echo -n "Checking if ${url} exists ... "
-    if wget --spider $url 2>/dev/null; then
-        # if the file exists, break out of the loop
-        echo "found!"
-        break
-    else
-        # if it doesn't exist, try one day earlier
-        echo "nothing here."
-        build_num=$(date -d "$build_num - 1 day" +%Y%m%d)
-    fi
-done
-
-# check if a valid build was found
-if [ "$i" -eq 14 ]; then
-    echo "Could not find a valid build to download. You might want to check the downloads page yourself: https://download.lineageos.org/devices/alioth/builds"
-    exit 1
-fi
-
-# download and verify boot.img
 cd "$WORK_DIR"
+
+# Get information about the latest build.
 echo ""
-echo "Downloading ${url} ..."
+echo "Downloading info about latest build …"
+latestBuild=$(curl -sL https://download.lineageos.org/api/v2/devices/${device}/builds | jq -r '.[0]')
+
+# Download and verify boot.img.
+latestBootImg=$(echo ${latestBuild} | jq -r '.files[] | select(.filename == "boot.img")')
+
+echo ""
+url=$(echo ${latestBootImg} | jq -r '.url')
+echo "Downloading ${url} …"
 curl -Lo "boot.img" "${url}"
 
 echo ""
-echo "Downloading checksum ..."
-curl -Lo "boot.img.sha256" "${url}?sha256"
+echo "Downloading checksum …"
+checksum=$(echo ${latestBootImg} | jq -r '.sha256')
 
 echo ""
-echo "Verifying download ..."
-sha256sum -c "boot.img.sha256"
+echo "Verifying download …"
+sha256sum -c <<<"${checksum} boot.img"
 
 # copy to downloads
 mkdir -p "$HOME/Downloads"
-cp boot.img "$HOME/Downloads/${device}-${build_num}.boot.img"
+latestBuildDate=$(echo ${latestBuild} | jq -r '.date')
+saveAs="${HOME}/Downloads/${device}.${latestBuildDate}.boot.img"
+cp boot.img "${saveAs}"
 echo ""
-echo "boot.img downloaded and saved to $HOME/Downloads/${device}-${build_num}.boot.img! 🥳"
+echo "boot.img downloaded and saved to ${saveAs}! 🥳"
